@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Chấm Công</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0b0d14;
+    --surface: #13161f;
+    --surface2: #1c2030;
+    --surface3: #242840;
+    --accent: #4f8ef7;
+    --accent2: #7c3aed;
+    --success: #22c55e;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --text: #e8eaf0;
+    --text2: #6b7194;
+    --border: #1f2438;
+    --radius: 14px;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+  }
+
+  /* ── Sidebar ─────────────────────────────────────────── */
+  .sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 28px 0;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+  }
+
+  .sidebar-logo {
+    padding: 0 20px 28px;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text2);
+    cursor: pointer;
+    border-left: 3px solid transparent;
+    transition: all .18s;
+    user-select: none;
+  }
+  .nav-item:hover { color: var(--text); background: var(--surface2); }
+  .nav-item.active { color: var(--accent); border-left-color: var(--accent); background: rgba(79,142,247,.07); }
+  .nav-icon { font-size: 17px; }
+
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 16px 20px;
+    font-size: 12px;
+    color: var(--text2);
+  }
+
+  /* ── Main ────────────────────────────────────────────── */
+  .main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px;
+  }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 28px;
+  }
+
+  .page-title {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+
+  .page-sub {
+    font-size: 13px;
+    color: var(--text2);
+    margin-top: 4px;
+    font-weight: 400;
+  }
+
+  /* ── Stats ───────────────────────────────────────────── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+  }
+
+  .stat-label { font-size: 11px; color: var(--text2); font-weight: 600; text-transform: uppercase; letter-spacing: .7px; }
+  .stat-value { font-size: 28px; font-weight: 700; margin-top: 6px; letter-spacing: -1px; }
+  .stat-value.green  { color: var(--success); }
+  .stat-value.blue   { color: var(--accent); }
+  .stat-value.purple { color: var(--accent2); }
+
+  /* ── Table ───────────────────────────────────────────── */
+  .table-wrap {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .table-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .toolbar-left { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .toolbar-right { display: flex; gap: 8px; }
+
+  input[type="date"], input[type="text"], select.filter-sel {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 8px 12px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  input[type="date"]:focus,
+  input[type="text"]:focus,
+  select.filter-sel:focus { border-color: var(--accent); }
+
+  .btn-sm {
+    border: none;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: all .18s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #3a7be8; }
+  .btn-success { background: var(--success); color: #fff; }
+  .btn-success:hover { background: #16a34a; }
+  .btn-danger  { background: var(--danger); color: #fff; }
+  .btn-danger:hover  { background: #dc2626; }
+  .btn-ghost   { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    background: var(--surface2);
+    padding: 11px 16px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: .7px;
+    text-align: left;
+  }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background .15s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--surface2); }
+  td { padding: 12px 16px; font-size: 14px; }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .badge-in  { background: rgba(34,197,94,.15);  color: var(--success); }
+  .badge-out { background: rgba(239,68,68,.15);  color: var(--danger); }
+  .badge-active { background: rgba(79,142,247,.15); color: var(--accent); }
+
+  .empty-row td { text-align: center; color: var(--text2); padding: 40px; }
+
+  /* ── Modal ───────────────────────────────────────────── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.65);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 28px;
+    width: 400px;
+    max-width: 90vw;
+  }
+  .modal-title { font-size: 17px; font-weight: 700; margin-bottom: 20px; }
+
+  .form-group { margin-bottom: 14px; }
+  .form-group label { display: block; font-size: 12px; color: var(--text2); font-weight: 600; margin-bottom: 6px; text-transform: uppercase; letter-spacing: .7px; }
+  .form-group input[type="text"] { width: 100%; }
+  .form-group select.filter-sel  { width: 100%; }
+
+  .modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
+
+  /* ── Settings ────────────────────────────────────────── */
+  .settings-group {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+  .settings-group h3 { font-size: 14px; font-weight: 700; margin-bottom: 16px; }
+  .settings-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .settings-row.three { grid-template-columns: 1fr 1fr 1fr; }
+
+  /* Toast */
+  #toast {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 12px 18px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 8px 32px rgba(0,0,0,.5);
+    z-index: 999;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all .3s;
+  }
+  #toast.show { transform: translateY(0); opacity: 1; }
+
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+    .main { padding: 20px 16px; }
+    .settings-row, .settings-row.three { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<nav class="sidebar">
+  <div class="sidebar-logo">⏱ ChamCong Admin</div>
+  <div class="nav-item active" data-page="overview"><span class="nav-icon">📊</span> Tổng quan</div>
+  <div class="nav-item" data-page="daily"><span class="nav-icon">📅</span> Chấm công theo ngày</div>
+  <div class="nav-item" data-page="history"><span class="nav-icon">🕐</span> Lịch sử nhân viên</div>
+  <div class="nav-item" data-page="employees"><span class="nav-icon">👥</span> Quản lý nhân viên</div>
+  <div class="nav-item" data-page="settings"><span class="nav-icon">⚙️</span> Cài đặt</div>
+  <div class="sidebar-footer">Firebase Realtime DB</div>
+</nav>
+
+<!-- Main -->
+<main class="main">
+
+  <!-- ── OVERVIEW ── -->
+  <section class="page active" id="page-overview">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Tổng quan hôm nay</div>
+        <div class="page-sub" id="overviewDate">--</div>
+      </div>
+      <button class="btn-sm btn-ghost" onclick="refreshOverview()">🔄 Làm mới</button>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Tổng nhân viên</div>
+        <div class="stat-value blue" id="statTotal">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Đã check-in</div>
+        <div class="stat-value green" id="statCheckin">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Đã check-out</div>
+        <div class="stat-value purple" id="statCheckout">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Chưa điểm danh</div>
+        <div class="stat-value" style="color:var(--warning)" id="statAbsent">0</div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <div class="table-toolbar">
+        <span style="font-size:14px;font-weight:600">Danh sách hôm nay</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Nhân viên</th>
+            <th>Check In</th>
+            <th>Check Out</th>
+            <th>Trạng thái</th>
+          </tr>
+        </thead>
+        <tbody id="overviewBody">
+          <tr class="empty-row"><td colspan="4">Đang tải…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── DAILY ── -->
+  <section class="page" id="page-daily">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Chấm công theo ngày</div>
+        <div class="page-sub">Toàn bộ lượt check-in/out trong ngày</div>
+      </div>
+      <button class="btn-sm btn-success" id="btnExport">⬇ Xuất CSV</button>
+    </div>
+
+    <div class="table-wrap">
+      <div class="table-toolbar">
+        <div class="toolbar-left">
+          <input type="date" id="dailyDate">
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Nhân viên</th>
+            <th>Loại</th>
+            <th>Thời gian</th>
+            <th>Vị trí</th>
+          </tr>
+        </thead>
+        <tbody id="dailyBody">
+          <tr class="empty-row"><td colspan="4">Chọn ngày để xem</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── HISTORY ── -->
+  <section class="page" id="page-history">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Lịch sử nhân viên</div>
+        <div class="page-sub">Tra cứu theo cá nhân và khoảng thời gian</div>
+      </div>
+    </div>
+
+    <div class="table-wrap" style="margin-bottom:16px">
+      <div class="table-toolbar">
+        <div class="toolbar-left">
+          <select class="filter-sel" id="histEmp" style="min-width:160px">
+            <option value="">Tất cả nhân viên</option>
+          </select>
+          <input type="date" id="histFrom">
+          <span style="color:var(--text2);font-size:13px">→</span>
+          <input type="date" id="histTo">
+          <button class="btn-sm btn-primary" id="btnHistSearch">Tìm kiếm</button>
+        </div>
+        <button class="btn-sm btn-success" id="btnHistExport">⬇ Xuất CSV</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Ngày</th>
+            <th>Nhân viên</th>
+            <th>Loại</th>
+            <th>Thời gian</th>
+          </tr>
+        </thead>
+        <tbody id="histBody">
+          <tr class="empty-row"><td colspan="4">Chọn bộ lọc và nhấn Tìm kiếm</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── EMPLOYEES ── -->
+  <section class="page" id="page-employees">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Quản lý nhân viên</div>
+        <div class="page-sub">Thêm, sửa, vô hiệu hoá tài khoản nhân viên</div>
+      </div>
+      <button class="btn-sm btn-primary" id="btnAddEmp">+ Thêm nhân viên</button>
+    </div>
+
+    <div class="table-wrap">
+      <div class="table-toolbar">
+        <input type="text" id="empSearch" placeholder="Tìm theo tên…" style="min-width:200px">
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Tên</th>
+            <th>ID</th>
+            <th>Phòng ban</th>
+            <th>Trạng thái</th>
+            <th>Hành động</th>
+          </tr>
+        </thead>
+        <tbody id="empBody">
+          <tr class="empty-row"><td colspan="5">Đang tải…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── SETTINGS ── -->
+  <section class="page" id="page-settings">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Cài đặt hệ thống</div>
+        <div class="page-sub">Toạ độ văn phòng và bán kính cho phép chấm công</div>
+      </div>
+    </div>
+
+    <div class="settings-group">
+      <h3>📍 Vị trí văn phòng</h3>
+      <div class="settings-row three">
+        <div class="form-group">
+          <label>Latitude</label>
+          <input type="text" id="setLat" placeholder="21.028511">
+        </div>
+        <div class="form-group">
+          <label>Longitude</label>
+          <input type="text" id="setLng" placeholder="105.804817">
+        </div>
+        <div class="form-group">
+          <label>Bán kính (mét)</label>
+          <input type="text" id="setRadius" placeholder="200">
+        </div>
+      </div>
+      <button class="btn-sm btn-primary" id="btnSaveOffice">💾 Lưu cài đặt</button>
+      <p style="font-size:12px;color:var(--text2);margin-top:10px">
+        💡 Lấy toạ độ: mở Google Maps → chuột phải vào văn phòng → copy toạ độ
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<!-- Modal: Add/Edit Employee -->
+<div class="modal-overlay" id="empModal">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle">Thêm nhân viên</div>
+    <div class="form-group">
+      <label>Họ và tên</label>
+      <input type="text" id="empName" placeholder="Nguyễn Văn A">
+    </div>
+    <div class="form-group">
+      <label>Phòng ban</label>
+      <input type="text" id="empDept" placeholder="Kế toán, IT, Sales…">
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sm btn-ghost" id="btnCancelModal">Huỷ</button>
+      <button class="btn-sm btn-primary" id="btnSaveModal">Lưu</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+import {
+  getDatabase, ref, push, set, update, onValue, get, query, orderByChild, equalTo, remove
+} from "https://www.gstatic.com/firebasejs/11.0.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAFPqs3vSdSAbxc-sWOI1y8_SuatKT2xNA",
+  authDomain: "chamcong-546bd.firebaseapp.com",
+  databaseURL: "https://chamcong-546bd-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "chamcong-546bd",
+  storageBucket: "chamcong-546bd.firebasestorage.app",
+  messagingSenderId: "548818577978",
+  appId: "1:548818577978:web:21f83245c39f2ccef5e303"
+};
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// ── Helpers ───────────────────────────────────────────────
+function fmtTime(iso) {
+  return new Date(iso).toLocaleTimeString('vi-VN', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+}
+function dateKey(d) { return d.toISOString().slice(0,10).replace(/-/g,''); }
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+function todayKey() { return dateKey(new Date()); }
+
+// ── Navigation ────────────────────────────────────────────
+let employees = {};
+
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    item.classList.add('active');
+    document.getElementById(`page-${item.dataset.page}`).classList.add('active');
+    if (item.dataset.page === 'daily') loadDaily();
+    if (item.dataset.page === 'overview') refreshOverview();
+  });
+});
+
+// ── Employees (global) ────────────────────────────────────
+onValue(ref(db, 'employees'), snap => {
+  employees = snap.exists() ? snap.val() : {};
+  renderEmpTable();
+  populateEmpDropdowns();
+  refreshOverview();
+});
+
+function populateEmpDropdowns() {
+  [document.getElementById('histEmp')].forEach(sel => {
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">Tất cả nhân viên</option>';
+    Object.entries(employees).forEach(([id, e]) => {
+      if (!e.active) return;
+      const o = document.createElement('option');
+      o.value = id; o.textContent = e.name;
+      sel.appendChild(o);
+    });
+    sel.value = cur;
+  });
+}
+
+// ── Overview ──────────────────────────────────────────────
+document.getElementById('overviewDate').textContent =
+  new Date().toLocaleDateString('vi-VN', { weekday:'long', day:'2-digit', month:'2-digit', year:'numeric' });
+document.getElementById('statTotal').textContent = '…';
+
+window.refreshOverview = async function() {
+  const snap = await get(ref(db, `attendance/${todayKey()}`));
+  const records = snap.exists() ? Object.values(snap.val()) : [];
+
+  const activeEmps = Object.entries(employees).filter(([,e]) => e.active);
+  document.getElementById('statTotal').textContent = activeEmps.length;
+
+  // Map: employeeId → { in, out }
+  const map = {};
+  records.forEach(r => {
+    if (!map[r.employeeId]) map[r.employeeId] = { in: null, out: null };
+    if (r.type === 'in')  map[r.employeeId].in  = r.timestamp;
+    if (r.type === 'out') map[r.employeeId].out = r.timestamp;
+  });
+
+  let checkin = 0, checkout = 0;
+  Object.values(map).forEach(v => { if (v.in) checkin++; if (v.out) checkout++; });
+  document.getElementById('statCheckin').textContent  = checkin;
+  document.getElementById('statCheckout').textContent = checkout;
+  document.getElementById('statAbsent').textContent   = Math.max(0, activeEmps.length - checkin);
+
+  const tbody = document.getElementById('overviewBody');
+  tbody.innerHTML = '';
+  if (activeEmps.length === 0) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="4">Chưa có nhân viên nào</td></tr>'; return;
+  }
+  activeEmps.forEach(([id, emp]) => {
+    const d = map[id] || {};
+    const status = d.out ? '<span class="badge badge-out">✓ Đã ra</span>'
+                 : d.in  ? '<span class="badge badge-in">● Đang làm</span>'
+                         : '<span class="badge" style="background:rgba(245,158,11,.12);color:#f59e0b">Chưa đến</span>';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${emp.name}</td>
+      <td>${d.in  ? fmtTime(d.in)  : '—'}</td>
+      <td>${d.out ? fmtTime(d.out) : '—'}</td>
+      <td>${status}</td>`;
+    tbody.appendChild(tr);
+  });
+};
+
+// ── Daily ─────────────────────────────────────────────────
+const dailyDateInput = document.getElementById('dailyDate');
+dailyDateInput.value = new Date().toISOString().slice(0,10);
+dailyDateInput.addEventListener('change', loadDaily);
+
+let dailyData = [];
+async function loadDaily() {
+  const d = dailyDateInput.value.replace(/-/g,'');
+  const snap = await get(ref(db, `attendance/${d}`));
+  dailyData = snap.exists() ? Object.values(snap.val()) : [];
+  dailyData.sort((a,b) => a.timestamp.localeCompare(b.timestamp));
+  renderDailyTable(dailyData);
+}
+loadDaily();
+
+function renderDailyTable(rows) {
+  const tbody = document.getElementById('dailyBody');
+  tbody.innerHTML = '';
+  if (!rows.length) { tbody.innerHTML = '<tr class="empty-row"><td colspan="4">Không có dữ liệu</td></tr>'; return; }
+  rows.forEach(r => {
+    const tr = document.createElement('tr');
+    const badge = r.type === 'in'
+      ? '<span class="badge badge-in">Check In</span>'
+      : '<span class="badge badge-out">Check Out</span>';
+    const geo = (r.lat && r.lng)
+      ? `<a href="https://maps.google.com/?q=${r.lat},${r.lng}" target="_blank" style="color:var(--accent);font-size:12px">📍 Xem</a>`
+      : '—';
+    tr.innerHTML = `<td>${r.employeeName || '—'}</td><td>${badge}</td><td>${fmtTime(r.timestamp)}</td><td>${geo}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+document.getElementById('btnExport').addEventListener('click', () => {
+  exportCSV(dailyData, `chamcong_${dailyDateInput.value}.csv`);
+});
+
+// ── History ───────────────────────────────────────────────
+const histFrom = document.getElementById('histFrom');
+const histTo   = document.getElementById('histTo');
+const now = new Date();
+histTo.value   = now.toISOString().slice(0,10);
+histFrom.value = new Date(now - 7*86400000).toISOString().slice(0,10);
+
+let histData = [];
+document.getElementById('btnHistSearch').addEventListener('click', loadHistory);
+document.getElementById('btnHistExport').addEventListener('click', () => {
+  exportCSV(histData, `lichsu_${histFrom.value}_${histTo.value}.csv`);
+});
+
+async function loadHistory() {
+  const from = histFrom.value.replace(/-/g,'');
+  const to   = histTo.value.replace(/-/g,'');
+  const empId = document.getElementById('histEmp').value;
+  const tbody = document.getElementById('histBody');
+  tbody.innerHTML = '<tr class="empty-row"><td colspan="4">Đang tải…</td></tr>';
+
+  // Generate date keys in range
+  const start = new Date(histFrom.value), end = new Date(histTo.value);
+  const keys = [];
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate()+1)) {
+    keys.push(dateKey(new Date(d)));
+  }
+
+  histData = [];
+  await Promise.all(keys.map(async k => {
+    const snap = await get(ref(db, `attendance/${k}`));
+    if (!snap.exists()) return;
+    Object.values(snap.val()).forEach(r => {
+      if (empId && r.employeeId !== empId) return;
+      histData.push(r);
+    });
+  }));
+  histData.sort((a,b) => b.timestamp.localeCompare(a.timestamp));
+
+  tbody.innerHTML = '';
+  if (!histData.length) { tbody.innerHTML = '<tr class="empty-row"><td colspan="4">Không có dữ liệu</td></tr>'; return; }
+  histData.forEach(r => {
+    const tr = document.createElement('tr');
+    const badge = r.type === 'in'
+      ? '<span class="badge badge-in">Check In</span>'
+      : '<span class="badge badge-out">Check Out</span>';
+    const dateStr = r.date
+      ? `${r.date.slice(6,8)}/${r.date.slice(4,6)}/${r.date.slice(0,4)}`
+      : '—';
+    tr.innerHTML = `<td>${dateStr}</td><td>${r.employeeName||'—'}</td><td>${badge}</td><td>${fmtTime(r.timestamp)}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// ── Employees CRUD ────────────────────────────────────────
+let editEmpId = null;
+
+document.getElementById('btnAddEmp').addEventListener('click', () => {
+  editEmpId = null;
+  document.getElementById('modalTitle').textContent = 'Thêm nhân viên';
+  document.getElementById('empName').value = '';
+  document.getElementById('empDept').value = '';
+  document.getElementById('empModal').classList.add('open');
+});
+
+document.getElementById('btnCancelModal').addEventListener('click', () => {
+  document.getElementById('empModal').classList.remove('open');
+});
+
+document.getElementById('btnSaveModal').addEventListener('click', async () => {
+  const name = document.getElementById('empName').value.trim();
+  const dept = document.getElementById('empDept').value.trim();
+  if (!name) { showToast('⚠️ Nhập tên nhân viên'); return; }
+  try {
+    if (editEmpId) {
+      await update(ref(db, `employees/${editEmpId}`), { name, dept });
+      showToast('✅ Đã cập nhật');
+    } else {
+      await push(ref(db, 'employees'), { name, dept, active: true, createdAt: new Date().toISOString() });
+      showToast('✅ Đã thêm nhân viên');
+    }
+    document.getElementById('empModal').classList.remove('open');
+  } catch(e) { showToast('❌ Lỗi: ' + e.message); }
+});
+
+function renderEmpTable() {
+  const search = (document.getElementById('empSearch').value||'').toLowerCase();
+  const tbody = document.getElementById('empBody');
+  tbody.innerHTML = '';
+  const list = Object.entries(employees).filter(([,e]) => e.name?.toLowerCase().includes(search));
+  if (!list.length) { tbody.innerHTML = '<tr class="empty-row"><td colspan="5">Chưa có nhân viên</td></tr>'; return; }
+  list.forEach(([id, emp]) => {
+    const tr = document.createElement('tr');
+    const statusBadge = emp.active
+      ? '<span class="badge badge-active">Đang làm</span>'
+      : '<span class="badge" style="background:rgba(239,68,68,.1);color:var(--danger)">Đã nghỉ</span>';
+    tr.innerHTML = `
+      <td><strong>${emp.name}</strong></td>
+      <td style="color:var(--text2);font-size:12px">${id.slice(-6)}</td>
+      <td>${emp.dept||'—'}</td>
+      <td>${statusBadge}</td>
+      <td>
+        <button class="btn-sm btn-ghost" style="margin-right:6px" onclick="editEmp('${id}')">✏️</button>
+        <button class="btn-sm btn-ghost" style="color:var(--warning)" onclick="toggleEmp('${id}',${emp.active})">${emp.active?'⏸ Vô hiệu':'▶ Kích hoạt'}</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+document.getElementById('empSearch').addEventListener('input', renderEmpTable);
+
+window.editEmp = function(id) {
+  const emp = employees[id];
+  if (!emp) return;
+  editEmpId = id;
+  document.getElementById('modalTitle').textContent = 'Sửa nhân viên';
+  document.getElementById('empName').value = emp.name;
+  document.getElementById('empDept').value = emp.dept || '';
+  document.getElementById('empModal').classList.add('open');
+};
+
+window.toggleEmp = async function(id, cur) {
+  await update(ref(db, `employees/${id}`), { active: !cur });
+  showToast(cur ? '⏸ Đã vô hiệu hoá' : '✅ Đã kích hoạt');
+};
+
+// ── Settings ──────────────────────────────────────────────
+onValue(ref(db, 'settings/office'), snap => {
+  if (snap.exists()) {
+    const d = snap.val();
+    document.getElementById('setLat').value    = d.lat    || '';
+    document.getElementById('setLng').value    = d.lng    || '';
+    document.getElementById('setRadius').value = d.radius || '';
+  }
+});
+
+document.getElementById('btnSaveOffice').addEventListener('click', async () => {
+  const lat    = parseFloat(document.getElementById('setLat').value);
+  const lng    = parseFloat(document.getElementById('setLng').value);
+  const radius = parseInt(document.getElementById('setRadius').value);
+  if (isNaN(lat) || isNaN(lng) || isNaN(radius)) { showToast('⚠️ Nhập đầy đủ và đúng định dạng số'); return; }
+  await set(ref(db, 'settings/office'), { lat, lng, radius });
+  showToast('✅ Đã lưu cài đặt vị trí');
+});
+
+// ── CSV Export ────────────────────────────────────────────
+function exportCSV(rows, filename) {
+  if (!rows.length) { showToast('⚠️ Không có dữ liệu để xuất'); return; }
+  const headers = ['Họ tên','Ngày','Loại','Thời gian','Lat','Lng'];
+  const csvRows = [headers.join(',')];
+  rows.forEach(r => {
+    const d = r.date ? `${r.date.slice(6,8)}/${r.date.slice(4,6)}/${r.date.slice(0,4)}` : '';
+    csvRows.push([
+      `"${r.employeeName||''}"`, d,
+      r.type==='in'?'Check In':'Check Out',
+      new Date(r.timestamp).toLocaleString('vi-VN'),
+      r.lat||'', r.lng||''
+    ].join(','));
+  });
+  const blob = new Blob(['\uFEFF' + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  showToast(`✅ Đã xuất ${rows.length} dòng`);
+}
+</script>
+</body>
+</html>

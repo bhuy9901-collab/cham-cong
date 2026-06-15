@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chấm Công</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --accent: #4f8ef7;
+    --accent2: #7c3aed;
+    --success: #22c55e;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --text: #e8eaf0;
+    --text2: #8b90a7;
+    --border: #2a2f45;
+    --radius: 16px;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px 40px;
+  }
+
+  .header {
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+  }
+
+  .logo {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .time-badge {
+    font-size: 13px;
+    color: var(--text2);
+    font-weight: 500;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    width: 100%;
+    max-width: 420px;
+    margin-bottom: 16px;
+  }
+
+  /* Clock ring */
+  .clock-ring {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 28px;
+  }
+
+  .ring-wrap {
+    position: relative;
+    width: 160px;
+    height: 160px;
+  }
+
+  #clockSvg { transform: rotate(-90deg); }
+
+  .ring-inner {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #clockDisplay {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -1px;
+    color: var(--text);
+  }
+
+  #dateDisplay {
+    font-size: 11px;
+    color: var(--text2);
+    margin-top: 2px;
+    font-weight: 500;
+  }
+
+  /* Employee info */
+  .employee-section label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .employee-select {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    padding: 12px 14px;
+    outline: none;
+    cursor: pointer;
+    transition: border-color .2s;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238b90a7' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+  }
+  .employee-select:focus { border-color: var(--accent); }
+
+  /* Location status */
+  .location-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    margin-top: 14px;
+    transition: all .3s;
+  }
+  .location-bar.checking { background: rgba(79,142,247,.1); color: var(--accent); border: 1px solid rgba(79,142,247,.25); }
+  .location-bar.ok       { background: rgba(34,197,94,.1);  color: var(--success); border: 1px solid rgba(34,197,94,.25); }
+  .location-bar.fail     { background: rgba(239,68,68,.1);  color: var(--danger);  border: 1px solid rgba(239,68,68,.25); }
+
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    animation: pulse 1.5s infinite;
+  }
+  .checking .dot { background: var(--accent); }
+  .ok .dot       { background: var(--success); animation: none; }
+  .fail .dot     { background: var(--danger);  animation: none; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: .3; }
+  }
+
+  /* Action buttons */
+  .btn-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 20px;
+  }
+
+  .btn {
+    border: none;
+    border-radius: 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    padding: 16px;
+    cursor: pointer;
+    transition: all .2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    disabled: false;
+  }
+  .btn:disabled { opacity: .35; cursor: not-allowed; transform: none !important; }
+
+  .btn-in {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: #fff;
+  }
+  .btn-in:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(34,197,94,.35); }
+
+  .btn-out {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: #fff;
+  }
+  .btn-out:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(239,68,68,.35); }
+
+  .btn-icon { font-size: 22px; }
+  .btn-label { font-size: 13px; font-weight: 500; opacity: .9; }
+
+  /* Today log */
+  .card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    margin-bottom: 14px;
+  }
+
+  .log-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .log-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: var(--surface2);
+    border-radius: 10px;
+  }
+
+  .log-icon { font-size: 18px; }
+  .log-type { font-size: 14px; font-weight: 600; }
+  .log-time { font-size: 13px; color: var(--text2); margin-left: auto; font-weight: 500; }
+  .log-type.in  { color: var(--success); }
+  .log-type.out { color: var(--danger); }
+
+  .empty-log {
+    text-align: center;
+    color: var(--text2);
+    font-size: 14px;
+    padding: 16px 0;
+  }
+
+  /* Toast */
+  #toast {
+    position: fixed;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 12px 20px;
+    border-radius: 40px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: transform .35s cubic-bezier(.34,1.56,.64,1);
+    z-index: 999;
+    white-space: nowrap;
+    box-shadow: 0 8px 32px rgba(0,0,0,.5);
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); }
+
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid rgba(79,142,247,.3);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+    flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">⏱ ChamCong</div>
+  <div class="time-badge" id="liveClock">--:--:--</div>
+</div>
+
+<!-- Clock visual -->
+<div class="card" style="text-align:center">
+  <div class="clock-ring">
+    <div class="ring-wrap">
+      <svg id="clockSvg" width="160" height="160" viewBox="0 0 160 160">
+        <circle cx="80" cy="80" r="70" fill="none" stroke="#22263a" stroke-width="10"/>
+        <circle id="clockArc" cx="80" cy="80" r="70" fill="none"
+          stroke="url(#grad)" stroke-width="10"
+          stroke-linecap="round"
+          stroke-dasharray="439.8"
+          stroke-dashoffset="439.8"/>
+        <defs>
+          <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#4f8ef7"/>
+            <stop offset="100%" stop-color="#7c3aed"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <div class="ring-inner">
+        <div id="clockDisplay">--:--</div>
+        <div id="dateDisplay">--/--/----</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="employee-section">
+    <label>Nhân viên</label>
+    <select class="employee-select" id="empSelect">
+      <option value="">-- Chọn tên của bạn --</option>
+    </select>
+  </div>
+
+  <div class="location-bar checking" id="locBar">
+    <div class="spinner"></div>
+    <span id="locText">Đang xác định vị trí…</span>
+  </div>
+
+  <div class="btn-group">
+    <button class="btn btn-in" id="btnIn" disabled>
+      <span class="btn-icon">🟢</span>
+      <span>Check In</span>
+      <span class="btn-label">Bắt đầu làm</span>
+    </button>
+    <button class="btn btn-out" id="btnOut" disabled>
+      <span class="btn-icon">🔴</span>
+      <span>Check Out</span>
+      <span class="btn-label">Kết thúc ca</span>
+    </button>
+  </div>
+</div>
+
+<!-- Today log -->
+<div class="card">
+  <div class="card-title">Hôm nay của bạn</div>
+  <div class="log-list" id="todayLog">
+    <div class="empty-log">Chọn tên để xem lịch sử hôm nay</div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+import { getDatabase, ref, push, onValue, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAFPqs3vSdSAbxc-sWOI1y8_SuatKT2xNA",
+  authDomain: "chamcong-546bd.firebaseapp.com",
+  databaseURL: "https://chamcong-546bd-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "chamcong-546bd",
+  storageBucket: "chamcong-546bd.firebasestorage.app",
+  messagingSenderId: "548818577978",
+  appId: "1:548818577978:web:21f83245c39f2ccef5e303"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// ── Config ────────────────────────────────────────────────
+// Toạ độ văn phòng & bán kính cho phép (mét)
+// Admin cập nhật trong Firebase: settings/office
+const DEFAULT_OFFICE = { lat: 21.028511, lng: 105.804817, radius: 200 }; // Mặc định: Hà Nội
+let office = { ...DEFAULT_OFFICE };
+
+onValue(ref(db, 'settings/office'), snap => {
+  if (snap.exists()) office = { ...DEFAULT_OFFICE, ...snap.val() };
+});
+
+// ── Clock ─────────────────────────────────────────────────
+const arc = document.getElementById('clockArc');
+const circumference = 2 * Math.PI * 70; // 439.8
+
+function tick() {
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  const s = String(now.getSeconds()).padStart(2,'0');
+  document.getElementById('clockDisplay').textContent = `${h}:${m}`;
+  document.getElementById('liveClock').textContent = `${h}:${m}:${s}`;
+  document.getElementById('dateDisplay').textContent =
+    now.toLocaleDateString('vi-VN', { weekday:'long', day:'2-digit', month:'2-digit', year:'numeric' });
+
+  const secFrac = (now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds()) / 86400;
+  arc.style.strokeDashoffset = circumference * (1 - secFrac);
+}
+tick(); setInterval(tick, 1000);
+
+// ── Employees ─────────────────────────────────────────────
+const empSelect = document.getElementById('empSelect');
+onValue(ref(db, 'employees'), snap => {
+  const cur = empSelect.value;
+  empSelect.innerHTML = '<option value="">-- Chọn tên của bạn --</option>';
+  if (snap.exists()) {
+    Object.entries(snap.val()).forEach(([id, emp]) => {
+      if (!emp.active) return;
+      const o = document.createElement('option');
+      o.value = id; o.textContent = emp.name;
+      empSelect.appendChild(o);
+    });
+  }
+  if (cur) empSelect.value = cur;
+});
+
+empSelect.addEventListener('change', () => {
+  loadTodayLog();
+  updateBtnState();
+});
+
+// ── Geolocation ───────────────────────────────────────────
+let geoOk = false;
+let userCoords = null;
+
+function haversine(lat1, lng1, lat2, lng2) {
+  const R = 6371000;
+  const dLat = (lat2-lat1)*Math.PI/180;
+  const dLng = (lng2-lng1)*Math.PI/180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function setLocBar(state, text) {
+  const bar = document.getElementById('locBar');
+  const span = document.getElementById('locText');
+  bar.className = `location-bar ${state}`;
+  if (state === 'checking') bar.innerHTML = `<div class="spinner"></div><span>${text}</span>`;
+  else {
+    const dot = `<div class="dot"></div>`;
+    bar.innerHTML = `${dot}<span>${text}</span>`;
+  }
+}
+
+function checkGeo() {
+  if (!navigator.geolocation) {
+    setLocBar('fail', 'Thiết bị không hỗ trợ định vị');
+    return;
+  }
+  setLocBar('checking', 'Đang xác định vị trí…');
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      userCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      const dist = Math.round(haversine(userCoords.lat, userCoords.lng, office.lat, office.lng));
+      if (dist <= office.radius) {
+        geoOk = true;
+        setLocBar('ok', `✓ Trong khu vực công ty (${dist}m)`);
+      } else {
+        geoOk = false;
+        setLocBar('fail', `Ngoài phạm vi — cách ${dist}m (tối đa ${office.radius}m)`);
+      }
+      updateBtnState();
+    },
+    err => {
+      geoOk = false;
+      const msg = err.code === 1 ? 'Vui lòng cho phép truy cập vị trí' : 'Không lấy được vị trí';
+      setLocBar('fail', msg);
+      updateBtnState();
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+}
+
+checkGeo();
+// Refresh vị trí mỗi 60 giây
+setInterval(checkGeo, 60000);
+
+// ── Buttons ───────────────────────────────────────────────
+const btnIn  = document.getElementById('btnIn');
+const btnOut = document.getElementById('btnOut');
+
+function updateBtnState() {
+  const hasEmp = !!empSelect.value;
+  btnIn.disabled  = !(hasEmp && geoOk);
+  btnOut.disabled = !(hasEmp && geoOk);
+}
+
+async function doCheckin(type) {
+  const empId = empSelect.value;
+  if (!empId || !geoOk) return;
+
+  const now = new Date();
+  const dateKey = now.toISOString().slice(0,10).replace(/-/g,'');
+  const empName = empSelect.options[empSelect.selectedIndex].text;
+
+  const record = {
+    employeeId: empId,
+    employeeName: empName,
+    type,
+    timestamp: now.toISOString(),
+    date: dateKey,
+    lat: userCoords?.lat || null,
+    lng: userCoords?.lng || null
+  };
+
+  try {
+    btnIn.disabled = true; btnOut.disabled = true;
+    await push(ref(db, `attendance/${dateKey}`), record);
+    showToast(type === 'in' ? `✅ Check-in lúc ${fmtTime(now)}` : `👋 Check-out lúc ${fmtTime(now)}`);
+    loadTodayLog();
+  } catch(e) {
+    showToast('❌ Lỗi kết nối, thử lại');
+    console.error(e);
+  } finally {
+    updateBtnState();
+  }
+}
+
+btnIn.addEventListener('click',  () => doCheckin('in'));
+btnOut.addEventListener('click', () => doCheckin('out'));
+
+// ── Today log ─────────────────────────────────────────────
+function fmtTime(d) {
+  return new Date(d).toLocaleTimeString('vi-VN', { hour:'2-digit', minute:'2-digit' });
+}
+
+function loadTodayLog() {
+  const empId = empSelect.value;
+  const logEl = document.getElementById('todayLog');
+  if (!empId) { logEl.innerHTML = '<div class="empty-log">Chọn tên để xem lịch sử hôm nay</div>'; return; }
+
+  const dateKey = new Date().toISOString().slice(0,10).replace(/-/g,'');
+  const q = query(ref(db, `attendance/${dateKey}`), orderByChild('employeeId'), equalTo(empId));
+
+  onValue(q, snap => {
+    logEl.innerHTML = '';
+    if (!snap.exists()) {
+      logEl.innerHTML = '<div class="empty-log">Chưa có dữ liệu hôm nay</div>';
+      return;
+    }
+    const items = Object.values(snap.val()).sort((a,b) => a.timestamp.localeCompare(b.timestamp));
+    items.forEach(r => {
+      const div = document.createElement('div');
+      div.className = 'log-item';
+      div.innerHTML = `
+        <span class="log-icon">${r.type==='in'?'🟢':'🔴'}</span>
+        <span class="log-type ${r.type}">${r.type==='in'?'Check In':'Check Out'}</span>
+        <span class="log-time">${fmtTime(r.timestamp)}</span>`;
+      logEl.appendChild(div);
+    });
+  });
+}
+
+// ── Toast ─────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
